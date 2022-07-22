@@ -51,6 +51,27 @@ class DB
         return $sth->fetchAll();
     }
 
+    public function count($count,$table, $where = null)
+    {
+        $sql = "SELECT COUNT(ALL {$count}) FROM {$table}";
+        if (is_array($where) && count($where) > 0) {
+            $whereParts = [];
+            foreach ($where as $key => $value) {
+                $whereParts [] = "{$key}= ?";
+            }
+            $whereStr = implode(' AND ', $whereParts);
+            $sql .= ' WHERE ' . $whereStr;
+        }
+        if (is_string($where))
+            $sql .= ' WHERE ' . $where;
+        $sth = $this->pdo->prepare($sql);
+        if (is_array($where) && count($where) > 0)
+            $sth->execute(array_values($where));
+        else
+            $sth->execute();
+        return $sth->fetch();
+    }
+
     public function insert($table, $row)
     {
         $fieldsStr = implode(", ", array_keys($row));

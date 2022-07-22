@@ -5,9 +5,12 @@ $Config =
             [
                 'Server' => 'localhost',
                 'Username' => 'root',
-                'Password' => 'root',
+                'Password' => '',
                 'Database' => 'cms'
             ],
         'NewsCount' => 15,
-        'NewsCount2' => 5
+        'StoryCount'=>15,
+        'NewsCount2' => 5,
+        'DiffCount'=>15,
+        'CommentsCount'=>5
     ];

@@ -29,12 +29,29 @@ $user = $UserModel->GetCurrentUser();
                     <li class="nav-item">
                         <a class="nav-link active" href="/news">Новини</a>
                     </li>
-                    <? if ($UserModel->IsUserAuthenticated()): ?>
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/news/add">Додати новину</a>
-                        </li>
-                    <? endif; ?>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/story">Історії</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/diff">Інше</a>
+                    </li>
                 </ul>
+                <form class="d-flex">
+                    <? if (!$UserModel->IsUserAuthenticated()): ?>
+                    <? else: ?>
+                        <ul class="nav nav-pills">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-light" data-bs-toggle="dropdown" href="#"
+                                   role="button" aria-expanded="false">Додати інформацію</a>
+                                <ul class="dropdown-menu bg-dark ">
+                                    <li><a class="nav-link text-light" href="/news/add">Додати новину</a></li>
+                                    <li><a class="nav-link text-light" href="/story/add">Додати історію</a></li>
+                                    <li><a class="nav-link text-light" href="/diff/add">Додати інше</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    <? endif; ?>
+                </form>
                 <form class="d-flex">
                     <? if (!$UserModel->IsUserAuthenticated()): ?>
                         <a href="/users/register" class="btn btn-outline-primary ">Реєстрація</a>

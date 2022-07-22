@@ -33,11 +33,14 @@ $user = $userModel->GetCurrentUser();
             <a href="/news/view?id=<?= $news['id'] ?>" class="btn btn-primary">Читати далі</a>
             <? if ($news['user_id'] == $user['id'] || $user['access'] == 1): ?>
                 <a href="/news/edit?id=<?= $news['id'] ?>" class="btn btn-success">Редагувати</a>
+                <a href="/news/addcomment?id=<?= $news['id'] ?>" class="btn btn-warning">Додати коментар</a>
                 <a href="/news/delete?id=<?= $news['id'] ?>" class="btn btn-danger">Видалити</a>
+                <a href="/news/addlike?id=<?= $news['id'] ?>" class="btn btn-success">Лайк</a>
             <? endif; ?>
         </div>
         <div>
             <h6>Стислий опис новини: </h6><?= $news['short_text'] ?>
         </div>
+
     </div>
 <?php endforeach; ?>

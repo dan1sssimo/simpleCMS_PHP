@@ -43,13 +43,85 @@ class News extends Controller
 
     public function actionView()
     {
+        global $Config;
         $id = $_GET['id'];
+        $counter = $this->newsModel->GetAllLikes($id);
         $news = $this->newsModel->GetNewsById($id);
+        if (empty($_POST))
+            $lastComments = $this->newsModel->GetLastComments($Config['CommentsCount'], $id);
         $title = $news['title'];
-        return $this->render('view', ['model' => $news], [
+        return $this->render('view', ['model' => $news, 'lastComments' => $lastComments, 'counter' => $counter], [
             'PageTitle' => $title,
             'MainTitle' => $title,
         ]);
+    }
+
+    public function actionAddLike()
+    {
+        $id = $_GET['id'];
+        $news = $this->newsModel->GetNewsById($id);
+        $user = $this->userModel->GetCurrentUser();
+        $titleForbidden = 'Доступ заборонено';
+        if (empty($this->user))
+            return $this->render('forbidden', null, [
+                'PageTitle' => $titleForbidden,
+                'MainTitle' => $titleForbidden,
+            ]);
+        $title = 'Додавання лайку';
+        if ($this->isPost()) {
+            $result = $this->newsModel->AddLike($_POST, $id);
+            if ($result['error'] === false) {
+                return $this->renderMessage('ok', 'Новина успішно оцінена', null,
+                    [
+                        'PageTitle' => $title,
+                        'MainTitle' => $title,]);
+            } else {
+                $message = implode('<br/>', $result['messages']);
+                return $this->render('addlike', ['model' => $_POST, 'news' => $news, 'user' => $user], [
+                    'PageTitle' => $title,
+                    'MainTitle' => $title,
+                    'MessageText' => $message,
+                    'MessageClass' => 'danger'
+                ]);
+            }
+        } else
+            return $this->render('addlike', ['model' => $_POST, 'news' => $news, 'user' => $user], [
+                'PageTitle' => $title,
+                'MainTitle' => $title,
+            ]);
+    }
+
+    public function actionAddComment()
+    {
+        $id = $_GET['id'];
+        $titleForbidden = 'Доступ заборонено';
+        if (empty($this->user))
+            return $this->render('forbidden', null, [
+                'PageTitle' => $titleForbidden,
+                'MainTitle' => $titleForbidden,
+            ]);
+        $title = 'Додавання коментаря';
+        if ($this->isPost()) {
+            $result = $this->newsModel->AddComment($_POST, $id);
+            if ($result['error'] === false) {
+                return $this->renderMessage('ok', 'Коментар успішно додано', null,
+                    [
+                        'PageTitle' => $title,
+                        'MainTitle' => $title,]);
+            } else {
+                $message = implode('<br/>', $result['messages']);
+                return $this->render('formcoment', ['model' => $_POST], [
+                    'PageTitle' => $title,
+                    'MainTitle' => $title,
+                    'MessageText' => $message,
+                    'MessageClass' => 'danger'
+                ]);
+            }
+        } else
+            return $this->render('formcoment', ['model' => $_POST], [
+                'PageTitle' => $title,
+                'MainTitle' => $title,
+            ]);
     }
 
     public function actionAdd()

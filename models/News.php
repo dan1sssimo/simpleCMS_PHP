@@ -39,6 +39,73 @@ class News extends \core\Model
         $this->UpdateNews($news, $id);
     }
 
+    public function AddLike($row, $id)
+    {
+        $userModel = new \models\Users();
+        $user = $userModel->GetCurrentUser();
+        $news = $this->GetNewsById($id);
+        if ($user == null) {
+            $result = [
+                'error' => true,
+                'messages' => ['Користувач не аунтефікований']
+            ];
+            return $result;
+        }
+        if (!empty($this->CheckSelect($id))) {
+            $result = [
+                'error' => true,
+                'messages' => ['Ви вже оцінювали новину']
+            ];
+            return $result;
+        } else {
+            $fields = [];
+            $RowFiltered = Utils::ArrayFilter($row, $fields);
+            $RowFiltered['user_id'] = $user['id'];
+            $RowFiltered['news_id'] = $news['id'];
+            $RowFiltered['checked'] = 1;
+            $RowFiltered['likes'] += 1;
+            $id = \core\Core::getInstance()->getDB()->insert('likes', $RowFiltered);
+            return [
+                'error' => false,
+                'id' => $id
+            ];
+        }
+
+    }
+
+    public function AddComment($row, $id)
+    {
+        $userModel = new \models\Users();
+        $user = $userModel->GetCurrentUser();
+        $news = $this->GetNewsById($id);
+        if ($user == null) {
+            $result = [
+                'error' => true,
+                'messages' => ['Користувач не аунтефікований']
+            ];
+            return $result;
+        }
+        $validateResult = $this->ValidateComment($row);
+        if (is_array($validateResult)) {
+            $result = [
+                'error' => true,
+                'messages' => $validateResult
+            ];
+            return $result;
+        }
+        $fields = ['text'];
+        $RowFiltered = Utils::ArrayFilter($row, $fields);
+        $RowFiltered['datetime'] = date('Y-m-d H:i:s');
+        $RowFiltered['user_id'] = $user['id'];
+        $RowFiltered['news_id'] = $news['id'];
+        $RowFiltered['firstname'] = $user['firstname'];
+        $id = \core\Core::getInstance()->getDB()->insert('comments', $RowFiltered);
+        return [
+            'error' => false,
+            'id' => $id
+        ];
+    }
+
     public function AddNews($row)
     {
         $userModel = new \models\Users();
@@ -73,6 +140,37 @@ class News extends \core\Model
     public function GetLastNews($count)
     {
         return \core\Core::getInstance()->getDB()->select('news', '*', null, ['datetime' => 'DESC'], $count);
+    }
+
+    public function GetAllLikes($id)
+    {
+        $news = $this->GetNewsById($id);
+        return \core\Core::getInstance()->getDB()->count('news_id', 'likes',['news_id' => $news['id']]);
+    }
+
+    public function CheckSelect($id)
+    {
+        $news = $this->GetNewsById($id);
+        $userModel = new \models\Users();
+        $user = $userModel->GetCurrentUser();
+        return \core\Core::getInstance()->getDB()->select('likes', '*', ['user_id' => $user['id'], 'news_id' => $news['id']]);
+    }
+
+    public function GetLastComments($count, $id)
+    {
+        $news = $this->GetNewsById($id);
+        return \core\Core::getInstance()->getDB()->select('comments', '*', ['news_id' => $news['id']], ['datetime' => 'DESC'], $count);
+    }
+
+    public function ValidateComment($row)
+    {
+        $errors = [];
+        if (empty($row['text']))
+            $errors[] = 'Поле "Текст коментаря" не може бути порожнім';
+        if (count($errors) > 0)
+            return $errors;
+        else
+            return true;
     }
 
     public function Validate($row)
